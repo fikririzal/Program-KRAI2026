@@ -1,0 +1,38 @@
+# Keil per-user settings
+**/MDK-ARM/*.uvguix.*
+
+# Keil generated build output
+**/MDK-ARM/DebugConfig/
+**/MDK-ARM/RTE/
+**/MDK-ARM/MotorPutarNew/
+**/MDK-ARM/Motor Roda Oren/
+**/MDK-ARM/*.lst
+**/MDK-ARM/EventRecorderStub.scvd
+
+# Generic compiler/linker artifacts
+*.o
+*.d
+*.crf
+*.axf
+*.hex
+*.lnp
+*.map
+*.dep
+*.bak
+*.iex
+*.build_log.htm
+
+# Unused CMSIS bundles; the projects reference only Device/ and Include/
+**/Drivers/CMSIS/Core/
+**/Drivers/CMSIS/Core_A/
+**/Drivers/CMSIS/docs/
+**/Drivers/CMSIS/DSP/
+**/Drivers/CMSIS/Lib/
+**/Drivers/CMSIS/NN/
+**/Drivers/CMSIS/RTOS/
+**/Drivers/CMSIS/RTOS2/
+
+# OS/editor noise
+desktop.ini
+Thumbs.db
+.DS_Store
