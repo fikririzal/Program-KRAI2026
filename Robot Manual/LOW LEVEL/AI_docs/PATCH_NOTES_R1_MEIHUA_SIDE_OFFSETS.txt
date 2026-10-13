@@ -1,0 +1,32 @@
+R1 Meihua Side Offset Constants Patch
+=====================================
+
+Scope perubahan:
+- Core/Src/R1MeihuaManual.c
+- AI_docs/PATCH_NOTES_R1_MEIHUA_SIDE_OFFSETS.txt
+
+Tidak diubah:
+- Core/Src/R1MotionControl.c
+- Core/Inc/R1MotionControl.h
+- Core/Src/Swerve.c
+- Core/Inc/Swerve.h
+- Kinematik()
+- odometry / denah-to-odometry conversion
+
+Tujuan patch:
+- Menambahkan define offset tuning per sisi Meihua:
+  kanan, kiri, atas, bawah.
+- Offset diterapkan di tabel 18 titik sebelum target masuk ke
+  R1Motion_GoToDenahPointFinalHeadingBase().
+
+Define tuning:
+- R1_MEIHUA_OFFSET_KANAN_X_MM
+- R1_MEIHUA_OFFSET_KIRI_X_MM
+- R1_MEIHUA_OFFSET_ATAS_Y_MM
+- R1_MEIHUA_OFFSET_BAWAH_Y_MM
+
+Catatan:
+- Offset positif mengikuti koordinat denah BLUE:
+  X+ ke kanan, Y+ ke arah atas/maju dari start.
+- Corner memakai dua offset sekaligus, misalnya point 1 memakai
+  X_KANAN dan Y_BAWAH.

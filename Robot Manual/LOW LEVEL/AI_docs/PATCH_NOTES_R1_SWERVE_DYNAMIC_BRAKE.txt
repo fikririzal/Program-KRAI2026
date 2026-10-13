@@ -1,0 +1,62 @@
+R1 Swerve Dynamic Brake RIZAL Patch
+==================================
+
+Scope perubahan:
+- Core/Inc/Swerve.h
+- Core/Src/Swerve.c
+- AI_docs/PATCH_NOTES_R1_SWERVE_DYNAMIC_BRAKE.txt
+
+Tidak diubah:
+- main.c
+- R1PathPlanner.c / R1PathPlanner.h
+- Kinematik() rumus utama dan offset roda
+- SetWorldPosition_RIZAL() / handler world position
+
+Masalah:
+- RodaStop() hanya mengirim speed 0 ke roda dengan sudut terakhir.
+- Pada gerak otomatis/path planner, robot masih punya momentum sehingga bisa overshoot waypoint pertama.
+
+Solusi:
+- RodaStop() tetap tidak diubah agar aman untuk stop umum/emergency.
+- Ditambahkan RodaBrakeDynamicRIZAL(gain, max_brake, brake_ms).
+- Fungsi ini mengirim command balik arah dari command terakhir JalanKeTitikRIZAL() / JalanKeTitikFinalHeadingRIZAL() selama waktu pendek memakai osDelay(5), lalu RodaStop().
+
+Fungsi baru di Swerve.h:
+- RodaBrakeDynamicRIZAL(float gain, float max_brake, uint32_t brake_ms)
+- RodaBrakeResetLastCommandRIZAL(void)
+
+Debug variables:
+- R1_BRAKE_DBG_LastVx
+- R1_BRAKE_DBG_LastVy
+- R1_BRAKE_DBG_LastOmega
+- R1_BRAKE_DBG_CmdVx
+- R1_BRAKE_DBG_CmdVy
+- R1_BRAKE_DBG_CmdOmega
+- R1_BRAKE_DBG_LastMs
+
+Tuning awal yang disarankan setelah waypoint otomatis:
+
+    RodaBrakeDynamicRIZAL(0.35f, 30.0f, 35U);
+
+Range tuning:
+- gain      : 0.20f - 0.50f
+- max_brake : 20.0f - 45.0f
+- brake_ms  : 20U   - 60U
+
+Jika masih overshoot:
+- naikkan brake_ms dulu, contoh 35U -> 50U
+- kalau belum cukup, naikkan gain 0.35f -> 0.45f
+
+Jika robot mental balik:
+- turunkan gain
+- turunkan max_brake
+- turunkan brake_ms
+
+Catatan penting:
+- Fungsi ini belum otomatis dipanggil oleh R1_RunGeneratedPath().
+- Untuk mengaktifkan pada path planner, panggil di wrapper gerak otomatis setelah JalanKeTitikRIZAL() pada waypoint tengah.
+- Jangan panggil setelah emergency stop.
+
+Perbaikan kecil:
+- Clamp negatif pada StopSpeed() diperbaiki dari +127 menjadi -127.
+  Fungsi StopSpeed() lama tetap memakai HAL_Delay(), jadi untuk RTOS/path planner tetap lebih aman memakai RodaBrakeDynamicRIZAL().

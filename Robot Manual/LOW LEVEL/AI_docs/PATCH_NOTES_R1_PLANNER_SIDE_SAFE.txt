@@ -1,0 +1,55 @@
+R1 Planner Side-Safe Minimal Patch
+=================================
+
+Scope perubahan:
+- Core/Inc/R1PathPlanner.h
+- Core/Src/R1PathPlanner.c
+
+Tidak diubah:
+- main.c
+- R1_RunGeneratedPath()
+- Gerak_JalanDenganMode()
+- Swerve.c / Swerve.h
+- Kinematik()
+- handler world position / SetWorldPosition_RIZAL()
+
+Tujuan patch:
+- Membuat posisi safe pathway dihitung eksplisit berdasarkan FINAL R1Side_t.
+- Untuk R1_SIDE_LEFT dan R1_SIDE_RIGHT, X safe dihitung dari permukaan depan base,
+  karena saat robot berada di sisi kiri/kanan, depan robot menghadap forest dan sumbu X arena
+  sejajar arah depan-belakang robot.
+- Untuk R1_SIDE_TOP, Y safe juga dihitung dari permukaan depan base.
+- Untuk R1_SIDE_BOTTOM, Y safe tetap konservatif memakai bottom offset/envelope.
+
+Konstanta baru di R1PathPlanner.h:
+- R1_SAFE_X_LEFT_BASE
+- R1_SAFE_X_RIGHT_BASE
+- R1_SAFE_Y_TOP
+- R1_SAFE_Y_BOTTOM
+
+Fungsi helper baru di R1PathPlanner.c:
+- R1Path_GetSafeXBySideBase(R1Side_t side)
+- R1Path_GetSafeYBySideBase(R1Side_t side)
+- R1Path_GetSafeXBySideArena(R1Side_t side)
+
+Rumus penting:
+- LEFT  : R1_SAFE_X_LEFT_BASE  = R1_FOREST_LEFT_X_BASE  - R1_PICK_OFFSET_LEFT_MM
+- RIGHT : R1_SAFE_X_RIGHT_BASE = R1_FOREST_RIGHT_X_BASE + R1_PICK_OFFSET_RIGHT_MM
+- TOP   : R1_SAFE_Y_TOP        = R1_FOREST_TOP_Y        - R1_PICK_OFFSET_TOP_MM
+- BOTTOM: R1_SAFE_Y_BOTTOM     = R1_FOREST_BOTTOM_Y     + R1_PICK_OFFSET_BOTTOM_MM
+
+Dengan konfigurasi saat ini:
+- R1_FOREST_LEFT_X_BASE = 700
+- R1_CENTER_TO_BASE_FRONT_MM = 500
+- R1_PATHWAY_CLEARANCE_MM = 50
+- R1_PICK_OFFSET_LEFT_MM = 550
+
+Maka untuk R1_SIDE_LEFT:
+- X safe = 700 - 550 = 150
+
+Expected target box 1 dengan R1_APPROACH_AVOID_R2_ZONE tetap:
+- Path[0] = x 150, y 2180, h 0, side TOP
+- Path[1] = x 150, y 3330, h 90, side LEFT
+
+Syntax check:
+- gcc -std=c99 -Wall -Wextra -fsyntax-only R1PathPlanner.c : OK

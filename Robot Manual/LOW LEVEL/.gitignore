@@ -1,0 +1,12 @@
+# Mengabaikan file sistem Windows
+desktop.ini
+Desktop.ini
+Thumbs.db
+EHThumbs.db
+Debug/
+.vscode/
+MasterR2-V1.code-workspace
+Master.zip
+
+# Mengabaikan file sistem macOS (jika ada teman tim pakai Mac)
+.DS_Store

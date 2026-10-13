@@ -1,0 +1,33 @@
+R1 Meihua Non-Modal Trigger Patch
+=================================
+
+Scope perubahan:
+- Core/Inc/R1MeihuaManual.h
+- Core/Src/R1MeihuaManual.c
+- Core/Src/main.c
+- AI_docs/PATCH_NOTES_R1_MEIHUA_NON_MODAL_TRIGGER.txt
+
+Tidak diubah:
+- Core/Src/Swerve.c
+- Core/Inc/Swerve.h
+- Kinematik()
+- deadwheel / odometry semantics
+- R1MotionControl denah-to-odometry conversion
+
+Tujuan patch:
+- Menghapus loop mode Meihua blocking.
+- JOYS_L_KANAN dan JOYS_L_KIRI langsung memicu pindah point dari ManualControl().
+- Tidak ada exit mode, last-exit restore, atau heading L1/R1 dalam patch ini.
+
+Perilaku baru:
+- JOYS_L_KANAN pertama setelah boot menuju point 1.
+- JOYS_L_KANAN berikutnya naik point dan wrap 18 -> 1.
+- JOYS_L_KIRI pertama setelah boot menuju point 18.
+- JOYS_L_KIRI berikutnya turun point dan wrap 1 -> 18.
+- Input ditahan tidak repeat; harus release lebih dulu.
+- Selama JOYS_L_KANAN/KIRI masih aktif, input dikonsumsi agar tidak tembus ke
+  base manual.
+
+Guard:
+- Jika point table belum ready, input tetap dikonsumsi, RodaStop() dipanggil,
+  dan tidak ada motion ke point.

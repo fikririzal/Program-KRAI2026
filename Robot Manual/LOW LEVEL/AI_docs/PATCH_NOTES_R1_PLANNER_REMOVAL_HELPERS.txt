@@ -1,0 +1,41 @@
+R1 Planner Removal + Helper Migration Patch
+===========================================
+
+Scope perubahan:
+- Core/Src/main.c
+- Core/Inc/R1ActuatorControl.h
+- Core/Src/R1ActuatorControl.c
+- Core/Inc/R1MotionControl.h
+- Core/Src/R1MotionControl.c
+- AI_docs/PATCH_NOTES_R1_PLANNER_REMOVAL_HELPERS.txt
+
+Tidak diubah:
+- Core/Src/Swerve.c
+- Core/Inc/Swerve.h
+- Kinematik()
+- odometry / RobotYaw update
+- Core/Inc/R1PathPlanner.h
+- Core/Src/R1PathPlanner.c
+
+Tujuan patch:
+- Memindahkan helper pneumatic dan tongkat dari main.c ke R1ActuatorControl.
+- Memindahkan profile gerak yang masih dipakai AmbilTongkatDanAssemblyDanGerak ke R1MotionControl.
+- Menghapus dependency runtime planner lama dari main.c.
+- Mengganti tombol MISC_SHARE menjadi reset PosX_World dan PosY_World saja.
+
+Perilaku yang dipertahankan:
+- Nama helper lama tetap dipakai: setPn1, setPn2, setPn3, initPneumaticState,
+  oldPneumatikMotor, setMotorTongkat, setServoTongkat, dan setLED.
+- oldPneumatikMotor dan helper tongkat tetap mengirim PneumaticMotor(speedTongkat,
+  posTongkatRAW, isLEDon).
+- Koordinat dan profile AmbilTongkatDanAssemblyDanGerak tetap mengikuti nilai lama.
+
+Perubahan MISC_SHARE:
+- Sebelum patch: reset pose dengan SetWorldPosition_RIZAL(0,0,0), generate path
+  R1Path_GenerateToMeihua(), lalu R1_RunGeneratedPath().
+- Setelah patch: RodaStop(), SetWorldPosition_X_and_Y(0,0), osDelay(5).
+- RobotYaw tidak diubah.
+
+Catatan planner:
+- main.c tidak lagi include R1PathPlanner.h.
+- R1PathPlanner.h dan R1PathPlanner.c belum dihapus agar cleanup tetap bertahap.

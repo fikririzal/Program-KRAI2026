@@ -1,0 +1,53 @@
+R1 Motion Profile RunGeneratedPath Patch
+========================================
+
+Scope perubahan:
+- Core/Src/main.c
+- AI_docs/PATCH_NOTES_R1_MOTION_PROFILE_RUNPATH.txt
+
+Tidak diubah:
+- Core/Src/Swerve.c
+- Core/Inc/Swerve.h
+- Kinematik()
+- SetWorldPosition_RIZAL() / world-position handler
+- R1PathPlanner.c / R1PathPlanner.h
+
+Tujuan patch:
+- Membuat wrapper gerak dasar R1 profile-aware, bukan selalu reset ke R1_GerakSetPIDDefault().
+- Membuat R1_RunGeneratedPath() menjalankan semua waypoint dengan satu profile planner yang sama.
+- Manual sequence tetap bisa memilih profile berbeda per step lewat fungsi BaseProfile / FinalHeadingBaseProfile.
+
+Fungsi baru:
+- R1_GerakPutarHeadingProfile(heading, profile)
+- R1_GerakPutarHeadingBaseProfile(h_base, profile)
+- R1_GerakJalanKeTitikProfile(x, y, h, profile)
+- R1_GerakJalanKeTitikBaseProfile(x_base, y, h_base, profile)
+- Gerak_JalanDenganModeProfile(..., profile)
+- R1_RunGeneratedPathProfile(path, path_count, profile)
+
+Wrapper lama tetap ada:
+- R1_GerakPutarHeading()
+- R1_GerakJalanKeTitik()
+- Gerak_JalanDenganMode()
+- R1_RunGeneratedPath()
+
+Default penting:
+- Wrapper gerak manual lama memakai R1_MOVE_NORMAL.
+- R1_RunGeneratedPath() memakai R1_MOVE_NORMAL_PATH_PLANNER.
+- Jika ingin planner lebih pelan/presisi, tuning R1_MOVE_NORMAL_PATH_PLANNER saja.
+
+Efek ke path planner:
+Sebelumnya waypoint tengah bisa diam-diam reset ke R1_MOVE_NORMAL karena R1_GerakPutarHeading()
+dan R1_GerakJalanKeTitik() selalu memanggil R1_GerakSetPIDDefault(). Setelah patch, semua gerak yang
+dipanggil oleh R1_RunGeneratedPath() melewati R1_RunGeneratedPathProfile(..., &R1_MOVE_NORMAL_PATH_PLANNER),
+sehingga MaxSpeed, LimitErrorJ, LimitErrorH, KPj, KDj, KPh, dan KDh konsisten untuk seluruh generated path.
+
+Catatan tuning:
+- max_output_speed: limit output gerak utama.
+- start_output_speed: start speed yang dikirim ke JalanKeTitikRIZAL/JalanKeTitikFinalHeadingRIZAL.
+- arrive_distance_mm: batas sampai untuk mode stop by jarak.
+- arrive_heading_deg: batas sampai untuk mode stop by heading/final heading.
+- pid_distance_limit_mm: limit error jarak yang masuk PID translasi.
+- pid_heading_limit_deg: limit error heading yang masuk PID heading.
+- kp_distance/kd_distance: respon dan damping translasi.
+- kp_heading/kd_heading: respon dan damping heading.

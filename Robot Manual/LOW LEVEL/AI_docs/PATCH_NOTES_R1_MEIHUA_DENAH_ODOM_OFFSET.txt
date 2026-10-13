@@ -1,0 +1,49 @@
+R1 Meihua Denah to Odometry Offset Patch
+========================================
+
+Scope perubahan:
+- Core/Inc/R1MotionControl.h
+- Core/Src/R1MotionControl.c
+- Core/Src/R1MeihuaManual.c
+- AI_docs/PATCH_NOTES_R1_MEIHUA_DENAH_ODOM_OFFSET.txt
+
+Tidak diubah:
+- Core/Src/Swerve.c
+- Core/Inc/Swerve.h
+- Kinematik()
+- deadwheel / odometry semantics
+- PosX_World, PosY_World, RobotYaw semantics
+- MISC_SHARE reset X/Y only
+
+Tujuan patch:
+- 18 titik Meihua dibaca sebagai koordinat denah BLUE dari tembok kiri/belakang.
+- Odometry start tetap diset ke center robot (0,0).
+- Target Meihua dikonversi di R1MotionControl sebelum masuk ke gerak low-level.
+
+Konversi target Meihua:
+- x_odom_base = x_denah_base - 400.0f
+- y_odom      = y_denah      - 470.0f
+- 400.0f = center robot dari tembok kiri saat start.
+- 470.0f = jig rear spacer 180.0f + center-to-base-rear 290.0f.
+
+API baru:
+- R1Motion_GoToDenahPointFinalHeadingBase(x_denah_base, y_denah, heading_base, profile)
+
+Perilaku yang dipertahankan:
+- R1Motion_GoToPointFinalHeadingBase() tetap menerima target odometry-relative.
+- AmbilTongkatDanAssemblyDanGerak() tetap memakai R1Motion_GoToPointFinalHeadingBase(),
+  sehingga koordinat sequence tongkat tidak ikut bergeser.
+- Mirror RED/BLUE tetap dilakukan di R1MotionControl.
+
+Live Expressions:
+- R1_MOTION_DBG_DenahXBase
+- R1_MOTION_DBG_DenahY
+- R1_MOTION_DBG_OdomXBase
+- R1_MOTION_DBG_OdomY
+- R1_MOTION_DBG_ArenaX
+- R1_MOTION_DBG_ArenaY
+
+Expected BLUE:
+- (5400, 600)  -> odom (5000, 130)
+- (600, 6600) -> odom (200, 6130)
+- (600, 600)  -> odom (200, 130)

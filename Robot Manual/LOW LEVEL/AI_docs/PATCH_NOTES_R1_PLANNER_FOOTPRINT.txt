@@ -1,0 +1,58 @@
+R1 Planner footprint minimal patch
+==================================
+
+Scope patch:
+- Core/Inc/R1PathPlanner.h
+- Core/Src/R1PathPlanner.c
+
+Tidak diubah:
+- Core/Src/main.c
+- R1_RunGeneratedPath()
+- Gerak_JalanDenganMode()
+- Swerve.c / Swerve.h / Kinematik / world-position handler
+
+Isi perubahan:
+1. Config planner dipisah antara:
+   - total/legal robot envelope: R1_ROBOT_WIDTH_X_MM, R1_ROBOT_LENGTH_Y_MM
+   - base/footprint bawah: R1_BASE_WIDTH_X_MM, R1_BASE_LENGTH_Y_MM
+   - jarak center ke sisi base: FRONT/REAR/LEFT/RIGHT
+   - mekanisme belakang: R1_CENTER_TO_MECH_REAR_MM
+
+2. Start zero sekarang dihitung dari jig:
+   R1_START_CENTER_Y_FROM_BACK_WALL_MM = R1_START_JIG_REAR_SPACER_Y_MM + R1_CENTER_TO_BASE_REAR_MM
+
+   Default:
+   - jig rear spacer = 180 mm
+   - center to base rear = 320 mm
+   - start center Y = 500 mm
+
+   Jadi hasil field Y tetap sama seperti config sebelumnya:
+   R1_FOREST_TOP_Y = 500 + 1000 + 1200 = 2700 mm
+
+3. Offset depan box dibuat per sisi:
+   - R1_PICK_OFFSET_TOP_MM
+   - R1_PICK_OFFSET_LEFT_MM
+   - R1_PICK_OFFSET_RIGHT_MM
+   - R1_PICK_OFFSET_BOTTOM_MM
+
+   Default:
+   - TOP/LEFT/RIGHT = center_to_base_front + clearance = 500 + 50 = 550 mm
+   - BOTTOM = total half length + clearance = 500 + 50 = 550 mm
+
+   Jadi default output path tidak berubah, tapi sekarang tinggal tuning per sisi.
+
+4. R1Path_GetMeihuaTarget() sekarang memakai offset per sisi, bukan satu R1_PICK_OFFSET_MM global.
+
+Titik tuning utama setelah patch:
+- R1_CENTER_TO_BASE_FRONT_MM
+- R1_CENTER_TO_BASE_REAR_MM
+- R1_CENTER_TO_BASE_LEFT_MM / RIGHT kalau tidak simetris
+- R1_START_JIG_REAR_SPACER_Y_MM
+- R1_PICK_OFFSET_BOTTOM_MM kalau bottom perlu lebih konservatif
+
+Expected default untuk BLUE + AVOID_R2 + target box 1:
+- Path[0] = x 150, y 2150, h 0
+- Path[1] = x 150, y 3300, h 90
+
+Syntax check:
+- R1PathPlanner.c berhasil di-check dengan GCC -std=c99 -Wall -Wextra.

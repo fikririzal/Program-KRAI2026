@@ -1,0 +1,51 @@
+Patch: R1 start zero + MISC_SHARE Meihua path test
+
+File yang diubah:
+- Core/Inc/R1PathPlanner.h
+- Core/Src/main.c
+
+Tidak mengubah:
+- Core/Src/Swerve.c
+- Core/Inc/Swerve.h
+- Kinematik()
+- implementasi SetWorldPosition / SetWorldPosition_RIZAL
+- task odometry / handler world position lain
+
+Isi patch:
+1. Menambahkan konfigurasi body robot R1:
+   - X/lebar = 800 mm
+   - Y/panjang = 1000 mm
+   - start zero dari titik tengah robot
+   - robot fisik ditempelkan ke tembok kiri dan belakang saat Start Zone BLUE
+
+2. Mengubah offset pathway/pick:
+   - R1_PICK_OFFSET_MM = 500 + 50 = 550 mm
+   - ini mempertimbangkan panjang robot 1000 mm saat heading kiri/kanan.
+
+3. Mengubah R1_SIDE_DETECT_MARGIN_MM dari 700 ke 600:
+   - supaya posisi start zero (0,0) terdeteksi R1_SIDE_OUTSIDE, bukan R1_SIDE_TOP.
+   - waypoint top-left/top-right tetap terdeteksi sebagai pathway.
+
+4. Tombol MISC_SHARE sekarang:
+   - RodaStop()
+   - set arena BLUE
+   - set approach AVOID_R2_ZONE
+   - SetWorldPosition_RIZAL(0,0,0) lewat macro R1_START_ZERO_*
+   - generate path ke R1_MAIN_TargetBox = 1
+   - langsung menjalankan R1_RunGeneratedPath()
+
+Live Expressions yang berguna:
+- PosX_World, PosY_World, RobotYaw
+- R1_MAIN_TargetBox
+- R1_MAIN_PathCount
+- R1_MAIN_RunStatus
+- R1_MAIN_Path[0..]
+- R1_DBG_CurrentSide
+- R1_DBG_BaseCurrentX, R1_DBG_BaseCurrentY
+
+Expected untuk MISC_SHARE dari start BLUE mepet kiri-belakang:
+- setelah zero: PosX_World=0, PosY_World=0, RobotYaw=0
+- current side awal seharusnya OUTSIDE
+- untuk target box 1 mode AVOID_R2_ZONE:
+  path kurang lebih TOP_LEFT -> depan box 1 dari sisi LEFT
+  karena offset jadi 550, X kiri berubah dari 200 menjadi 150.

@@ -1,0 +1,51 @@
+R1 Planner LEFT Centered Safe Patch
+==================================
+
+Scope perubahan:
+- Core/Inc/R1PathPlanner.h
+- Core/Src/R1PathPlanner.c
+- AI_docs/PATCH_NOTES_R1_PLANNER_LEFT_CENTERED_SAFE.txt
+
+Tidak diubah:
+- main.c
+- R1_RunGeneratedPath()
+- Gerak_JalanDenganMode()
+- Swerve.c / Swerve.h
+- Kinematik()
+- handler world position / SetWorldPosition_RIZAL()
+
+Masalah yang diperbaiki:
+- Patch side-safe sebelumnya menghitung R1_SIDE_LEFT memakai:
+    x_safe = forest_left - front_offset - clearance
+  sehingga robot diposisikan dekat forest.
+- Requirement terbaru: saat final side = R1_SIDE_LEFT, robot heading world 90,
+  depan robot menghadap forest, sedangkan belakang base menghadap tembok kiri.
+  Jadi X safe harus dihitung dari dua batas: tembok kiri dan sisi kiri forest,
+  lalu base di-center-kan berdasarkan panjang base aktual.
+
+Data terbaru:
+- R1_CENTER_TO_BASE_FRONT_MM = 350 mm
+- R1_CENTER_TO_BASE_REAR_MM  = 290 mm
+- R1_LEFT_OUTER_WALL_X_BASE  = -400 mm
+- R1_FOREST_LEFT_X_BASE      = 700 mm
+
+Rumus LEFT centered:
+- clear_wall   = (x_center - rear_base) - left_outer_wall
+- clear_forest = forest_left - (x_center + front_base)
+- clear_wall == clear_forest
+
+Maka:
+- pathway_width = 700 - (-400) = 1100 mm
+- base_length   = 350 + 290 = 640 mm
+- center_gap    = (1100 - 640) / 2 = 230 mm
+- x_center      = -400 + 290 + 230 = 120 mm
+
+Expected BLUE + R1_APPROACH_AVOID_R2_ZONE + target box 1 dari OUTSIDE:
+- Path[0] = x 120, y 2330, h 0,  side R1_SIDE_TOP
+- Path[1] = x 120, y 3330, h 90, side R1_SIDE_LEFT
+
+Catatan:
+- R1_SIDE_TOP ikut berubah Y karena R1_CENTER_TO_BASE_FRONT_MM sekarang 350 mm.
+  Jadi R1_SAFE_Y_TOP = R1_FOREST_TOP_Y - (350 + 50) = 2730 - 400 = 2330.
+- R1_SIDE_RIGHT sementara masih memakai formula lama berbasis forest + front offset,
+  karena data outer wall kanan belum dimasukkan eksplisit.
