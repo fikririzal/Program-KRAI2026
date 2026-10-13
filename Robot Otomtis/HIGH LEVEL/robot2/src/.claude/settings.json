@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(colcon build *)",
+      "Bash(udevadm info *)",
+      "Bash(ros2 topic *)",
+      "Bash(ros2 run *)",
+      "Bash(ros2 pkg *)",
+      "Bash(source /home/krai/Desktop/Huda/robot2/install/setup.bash)"
+    ]
+  }
+}

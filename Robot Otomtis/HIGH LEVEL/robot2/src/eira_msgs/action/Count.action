@@ -1,0 +1,9 @@
+# Request
+int32 target_goal
+---
+# Result
+bool success
+string message
+---
+# Feedback
+int32 current_number

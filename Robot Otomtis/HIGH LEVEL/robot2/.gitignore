@@ -1,0 +1,11 @@
+build/
+install/
+log/
+datasetBiru/
+*.engine
+*.onnx
+*.pt
+*.zip
+.vscode/
+__pycache__/
+*.py[cod]

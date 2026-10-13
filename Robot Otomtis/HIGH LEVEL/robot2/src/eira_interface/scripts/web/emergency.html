@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emergency Button</title>
+
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    * {
+      user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+    }
+
+    button {
+      flex: 1;
+      font-size: 5vw;
+      touch-action: none;
+    }
+
+    button:focus {
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <button id="emergencyBtn">EMERGENCY</button>
+  </div>
+
+  <script>
+    const emergencyBtn = document.getElementById("emergencyBtn");
+
+    let isPressed = false;
+    let activePointerId = null;
+
+    async function sendEmergency(value) {
+      try {
+        await fetch("/api/emergency", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            emergency: value
+          })
+        });
+      } catch (error) {
+        console.log("Gagal kirim emergency:", error);
+      }
+    }
+
+    function pressEmergency(event) {
+      event.preventDefault();
+
+      if (isPressed) {
+        return;
+      }
+
+      isPressed = true;
+      activePointerId = event.pointerId;
+
+      emergencyBtn.setPointerCapture(activePointerId);
+
+      sendEmergency(true);
+    }
+
+    function releaseEmergency(event) {
+      event.preventDefault();
+
+      if (!isPressed) {
+        return;
+      }
+
+      if (activePointerId !== null) {
+        try {
+          emergencyBtn.releasePointerCapture(activePointerId);
+        } catch (error) {
+          // Abaikan kalau pointer capture sudah lepas
+        }
+      }
+
+      isPressed = false;
+      activePointerId = null;
+
+      sendEmergency(false);
+    }
+
+    emergencyBtn.addEventListener("pointerdown", pressEmergency);
+    emergencyBtn.addEventListener("pointerup", releaseEmergency);
+    emergencyBtn.addEventListener("pointercancel", releaseEmergency);
+
+    emergencyBtn.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+    });
+
+    emergencyBtn.addEventListener("dragstart", (event) => {
+      event.preventDefault();
+    });
+
+    window.addEventListener("blur", () => {
+      if (isPressed) {
+        isPressed = false;
+        activePointerId = null;
+        sendEmergency(false);
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      sendEmergency(false);
+    });
+  </script>
+
+</body>
+</html>

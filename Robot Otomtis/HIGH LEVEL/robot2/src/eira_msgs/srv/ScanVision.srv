@@ -1,0 +1,10 @@
+int32 mode  # 0: Scan Arena, 1: CF, 2: TicTacToe
+int32 team  -1 # 0: Blue, 1: Red
+int32 pos   # Posisi awal robot / koordinat scanning
+---
+int32[] scan_result
+int32 scan_validate
+int32[] scan_ttt
+int32[] scan_cf
+bool success
+string message

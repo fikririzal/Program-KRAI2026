@@ -1,0 +1,29 @@
+urg_node:
+  ros__parameters:
+    ip_address: "192.168.0.100"
+    ip_port: 10940
+
+    laser_frame_id: "laser"
+    angle_min: -1.5707963   # -90 deg (kanan robot)
+    angle_max:  1.5707963   #  +90 deg (kiri robot)
+
+    publish_intensity: false
+    publish_multiecho: false
+
+    calibrate_time: false
+    default_user_latency: 0.0
+    diagnostics_tolerance: 0.05
+    diagnostics_window_time: 5.0
+    error_limit: 4
+    get_detailed_status: false
+    cluster: 1
+    skip: 0
+
+scan_publisher:
+  ros__parameters:
+    input_topic: "/scan"
+    output_topic: "/scan_filtered"
+    range_min: 0.06
+    range_max: 20.0
+    angle_min: -1.5707963
+    angle_max:  1.5707963
